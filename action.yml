@@ -15,32 +15,60 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - uses: bluwy/substitute-string-action@v1
+      id: sub
+      with:
+        _input-text: '${{ github.head_ref }}'
+        /: '-'
+    - name: Archive exists
+      id: 'previous_archive'
+      uses: fddayan/archive-exists@v0.0.1
+      with:
+        archiveName: storybook-hash-file-${{ steps.sub.outputs.result }}
     - name: Get sha values
+      if: ${{step.previous_archive.outputs.archiveFound == 'FALSE'}}
       id: git_sha
       shell: bash
       run: |
         echo "::set-output name=current_sha_short::$(git rev-parse HEAD)"
         echo "::set-output name=previous_sha_short::$(git rev-parse HEAD~1)"
     - uses: actions/checkout@v2
+      if: ${{step.previous_archive.outputs.archiveFound == 'FALSE'}}
       with:
         fetch-depth: 0
         path: previous
         ref: ${{steps.git_sha.outputs.previous_sha_short}}
     - name: Build Storybook in previous build
+      if: ${{step.previous_archive.outputs.archiveFound == 'FALSE'}}
       run: npm run build-storybook
       working-directory: previous
       shell: bash
     - name: Build Storybook in current build
       run: npm run build-storybook
       shell: bash
+    - name: Generate hash for previous commit from current storybook build
+      if: ${{step.previous_archive.outputs.archiveFound == 'FALSE'}}
+      run: find ./previous/storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-previous.txt
+      shell: bash
+    - name: Download previous Storybook build hash
+      if: ${{step.previous_archive.outputs.archiveFound == 'TRUE'}}
+      uses: actions/download-artifact@v2
+      with:
+        name: storybook-hash-file-${{ steps.sub.outputs.result }}
+        path: storybook-hash-previous.txt
+      shell: bash
     - name: Get hash values for previous and current storybook builds
       id: storybook-hash
-      run: | 
-         find ./previous/storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-previous.txt
+      run: |          
          find ./storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-current.txt
          echo "::set-output name=previous_hash::$(cat storybook-hash-previous.txt)"
          echo "::set-output name=current_hash::$(cat storybook-hash-current.txt)"
       shell: bash
+    - name: Archive current Storybook build hash
+      uses: actions/upload-artifact@v2
+      with:
+        name: storybook-hash-file-${{ steps.sub.outputs.result }}
+        path: storybook-hash-current.txt
     - run: echo "::set-output name=should_deploy::${{ steps.storybook-hash.previous_hash != steps.storybook-hash.current_hash }}"
       id: chromatic-checker
       shell: bash

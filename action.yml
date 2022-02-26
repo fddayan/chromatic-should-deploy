@@ -72,9 +72,9 @@ runs:
       run: |
         echo "Previous hash: ${{ steps.storybook-hash.outputs.previous_hash}}"
         echo "Current hash: ${{steps.storybook-hash.outputs.current_hash }}"
-        echo "Should deploy: ${{ steps.storybook-hash..outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
+        echo "Should deploy: ${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
         echo "Artifact found: ${{steps.previous_archive.outputs.artifacts_found}}"
       shell: bash
-    - run: echo "::set-output name=should_deploy::${{ steps.storybook-hash.previous_hash != steps.storybook-hash.current_hash }}"
+    - run: echo "::set-output name=should_deploy::${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
       id: chromatic-checker
       shell: bash

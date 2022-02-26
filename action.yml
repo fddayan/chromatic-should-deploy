@@ -26,7 +26,11 @@ runs:
       with:
         artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
     - name: Print artifact data
-      run: echo "${{steps.previous_archive.outputs.artifacts_data}}"
+      run: |
+        echo "Data:"
+        echo "${{steps.previous_archive.outputs.artifacts_data}}"
+        echo "Artifacts found:"
+        echo "${{steps.previous_archive.outputs.artifacts_found}"
       shell: bash
     - name: Get sha values
       if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}

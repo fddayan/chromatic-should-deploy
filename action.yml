@@ -41,6 +41,6 @@ runs:
          echo "::set-output name=previous_hash::$(cat storybook-hash-previous.txt)"
          echo "::set-output name=current_hash::$(cat storybook-hash-current.txt)"
       shell: bash
-    - run: echo "::set-output name=should_deploy::${{ steps.storybook-hash.previous_hash == steps.storybook-hash.current_hash }}"
+    - run: echo "::set-output name=should_deploy::${{ steps.storybook-hash.previous_hash != steps.storybook-hash.current_hash }}"
       id: chromatic-checker
       shell: bash

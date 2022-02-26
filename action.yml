@@ -1,11 +1,48 @@
-name: 'Your name here'
-description: 'Provide a description here'
+name: 'Federico Dayan'
+description: 'Checks if storybook build changed from previous commit  '
 author: 'Your name or organization here'
 inputs:
   milliseconds: # change this
     required: true
     description: 'input description here'
     default: 'default value if applicable'
+outputs:
+  should_deploy:
+    description: TRUE/FALSE value if it should deploy chromatic based on previous build
+    value: ${{ steps.chromatic-checker.outputs.should_deploy }}
+
+# runs:
+#   using: 'node12'
+#   main: 'dist/index.js'
 runs:
-  using: 'node12'
-  main: 'dist/index.js'
+  using: 'composite'
+  steps:
+    - name: Get sha values
+      id: git_sha
+      shell: bash
+      run: |
+        echo "::set-output name=current_sha_short::$(git rev-parse --short HEAD)"
+        echo "::set-output name=previous_sha_short::$(git rev-parse --short HEAD~1)"
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        path: previous
+        ref: ${{steps.git_sha.outputs.previous_sha_short}}
+    - name: Build Storybook in previous build
+      run: npm run build-storybook
+      working-directory: previous
+      shell: bash
+    - name: Build Storybook in current build
+      run: npm run build-storybook
+      shell: bash
+    - name: Get hash values for previous and current storybook builds
+      id: storybook-hash
+      run: | 
+         find ./previous/storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-previous.txt
+         find ./storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-current.txt
+         echo "::set-output name=previous_hash::$(cat storybook-hash-previous.txt)"
+         echo "::set-output name=current_hash::$(cat storybook-hash-current.txt)"
+      shell: bash
+    - run: echo "::set-output name=should_deploy::${{ step.storybook-hash.previous_hash == step.storybook-hash.current_hash }}"
+      id: chromatic-checker
+      shell: bash

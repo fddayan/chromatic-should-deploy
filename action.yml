@@ -1,6 +1,6 @@
-name: 'Federico Dayan'
+name: 'chromatic should deploy'
 description: 'Checks if storybook build changed from previous commit  '
-author: 'Your name or organization here'
+author: 'fddayan'
 branding:
   icon: 'alert-triangle'  
   color: 'green'

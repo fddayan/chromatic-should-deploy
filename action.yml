@@ -1,11 +1,9 @@
 name: 'Federico Dayan'
 description: 'Checks if storybook build changed from previous commit  '
 author: 'Your name or organization here'
-inputs:
-  milliseconds: # change this
-    required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+branding:
+  icon: 'alert-triangle'  
+  color: 'green'
 outputs:
   should_deploy:
     description: TRUE/FALSE value if it should deploy chromatic based on previous build

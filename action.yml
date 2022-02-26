@@ -22,7 +22,7 @@ runs:
         /: '-'
     - name: Archive exists
       id: 'previous_archive'
-      uses: fddayan/archive-exists@v0.0.1
+      uses: fddayan/archive-exists@main
       with:
         archiveName: storybook-hash-file-${{ steps.sub.outputs.result }}
     - name: Get sha values

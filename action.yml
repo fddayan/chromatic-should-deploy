@@ -27,6 +27,7 @@ runs:
         get: storybook-hash-file-${{ steps.sub.outputs.result }}
         file: storybook-hash-current.txt
     - name: Rename file to previous
+      if: ${{steps.cached_file.outputs.get_found == 'TRUE'}}
       run: mv storybook-hash-current.txt storybook-hash-previous.txt
       shell: bash
     # - name: Archive exists

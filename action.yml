@@ -9,9 +9,6 @@ outputs:
     description: TRUE/FALSE value if it should deploy chromatic based on previous build
     value: ${{ steps.chromatic-checker.outputs.should_deploy }}
 
-# runs:
-#   using: 'node12'
-#   main: 'dist/index.js'
 runs:
   using: 'composite'
   steps:
@@ -26,16 +23,16 @@ runs:
       run: |
         echo "::set-output name=current_sha_short::$(git rev-parse HEAD)"
         echo "::set-output name=previous_sha_short::$(git rev-parse HEAD~1)"
-    - name: Archive exists
-      id: 'previous_archive'
+    - name: Artifact exists
+      id: 'previous_artifact'
       uses: fddayan/archive-exists@main
       with:        
         artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
         download: true
         downloadTo: storybook-hash-previous.txt
-    - name: Archive download 
+    - name: Artifact download 
       run: |
-        curl -L -u taskrabbit:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_archive.outputs.artifactDownloadUrl}}
+        curl -L -u taskrabbit:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_artifact.outputs.artifactDownloadUrl}}
       shell: bash
     - name: Unzip Artifact
       run: |
@@ -44,13 +41,13 @@ runs:
           cat storybook-hash-previous.txt
       shell: bash
     - uses: actions/checkout@v2
-      if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}
+      if: ${{steps.previous_artifact.outputs.artifactsFound == 'FALSE'}}
       with:
         fetch-depth: 0
         path: previous
         ref: ${{ github.event.before }}
     - name: Build Storybook in previous build
-      if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}
+      if: ${{steps.previous_artifact.outputs.artifactsFound == 'FALSE'}}
       run: npm run build-storybook > /dev/null 2>&1
       working-directory: previous
       shell: bash
@@ -58,7 +55,7 @@ runs:
       run: npm run build-storybook > /dev/null 2>&1
       shell: bash
     - name: Generate hash for previous commit from current storybook build
-      if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}
+      if: ${{steps.previous_artifact.outputs.artifactsFound == 'FALSE'}}
       run: | 
         find ./previous/storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-previous.txt
         cat storybook-hash-previous.txt
@@ -81,7 +78,7 @@ runs:
         echo "Previous hash: ${{ steps.storybook-hash.outputs.previous_hash}}"
         echo "Current hash: ${{steps.storybook-hash.outputs.current_hash }}"
         echo "Should deploy: ${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
-        echo "Artifact found: ${{steps.previous_archive.outputs.artifacts_found}}"
+        echo "Artifact found: ${{steps.previous_artifact.outputs.artifactsFound}}"
       shell: bash
     - run: echo "::set-output name=should_deploy::${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
       id: chromatic-checker

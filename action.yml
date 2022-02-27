@@ -43,7 +43,7 @@ runs:
           cat storybook-hash-previous.txt.zip
           unzip storybook-hash-previous.txt.zip
           echo "---------------"
-          cat storybook-hash-previous.txt.zip
+          cat storybook-hash-previous.txt
       shell: bash
     - uses: actions/checkout@v2
       if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}

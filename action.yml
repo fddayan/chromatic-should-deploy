@@ -29,10 +29,12 @@ runs:
       with:        
         artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
     - name: Artifact download 
+      if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
       run: |
         curl -L -u taskrabbit:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_artifact.outputs.artifactDownloadUrl}}
       shell: bash
     - name: Unzip Artifact
+      if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
       run: |
           unzip storybook-hash-previous.txt.zip
           mv storybook-hash-current.txt storybook-hash-previous.txt

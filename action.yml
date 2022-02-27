@@ -37,16 +37,6 @@ runs:
       run: |
         curl -L -u taskrabbit:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_archive.outputs.artifactDownloadUrl}}
       shell: bash
-    - run: |
-          ls
-          echo "---------------"
-          cat storybook-hash-previous.txt.zip
-          unzip storybook-hash-previous.txt.zip
-          mv storybook-hash-current.txt storybook-hash-previous.txt
-          echo "---------------"
-          ls
-          cat storybook-hash-previous.txt
-      shell: bash
     - uses: actions/checkout@v2
       if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}
       with:

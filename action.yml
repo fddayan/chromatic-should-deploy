@@ -34,17 +34,11 @@ runs:
     #   uses: fddayan/archive-exists@main
     #   with:
     #     artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
-    # - name: Print artifact data
-    #   run: |
-    #     echo "Data:"
-    #     echo "${{steps.previous_archive.outputs.artifacts_data}}"
-    #     echo "Artifacts found:"
-    #     echo "${{steps.previous_archive.outputs.artifacts_found}}"
-    #     echo "Artifacts length:"
-    #     echo "${{steps.previous_archive.outputs.artifacts_found_length}}"
-    #     echo "Artifacts names:"
-    #     echo "${{steps.previous_archive.outputs.artifacts_names}}"        
-    #   shell: bash
+    - name: Print data
+      run: |
+        echo "Cache file get found:"
+        echo "${{steps.cached_file.outputs.get_found}}"
+      shell: bash
     - name: Get sha values
       if: ${{steps.cached_file.outputs.get_found == 'FALSE'}}
       id: git_sha

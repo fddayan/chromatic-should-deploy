@@ -20,37 +20,46 @@ runs:
       with:
         _input-text: '${{ github.head_ref }}'
         /: '-'
-    - name: Archive exists
-      id: 'previous_archive'
-      uses: fddayan/archive-exists@main
+    - name: Get cached previous storybook hash
+      id: cached_file
+      uses: fddayan/cache-file@main
       with:
-        artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
-    - name: Print artifact data
-      run: |
-        echo "Data:"
-        echo "${{steps.previous_archive.outputs.artifacts_data}}"
-        echo "Artifacts found:"
-        echo "${{steps.previous_archive.outputs.artifacts_found}}"
-        echo "Artifacts length:"
-        echo "${{steps.previous_archive.outputs.artifacts_found_length}}"
-        echo "Artifacts names:"
-        echo "${{steps.previous_archive.outputs.artifacts_names}}"        
+        get: storybook-hash-file-${{ steps.sub.outputs.result }}
+        file: storybook-hash-current.txt
+    - name: Rename file to previous
+      run: mv storybook-hash-current.txt storybook-hash-previous.txt
       shell: bash
+    # - name: Archive exists
+    #   id: 'previous_archive'
+    #   uses: fddayan/archive-exists@main
+    #   with:
+    #     artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
+    # - name: Print artifact data
+    #   run: |
+    #     echo "Data:"
+    #     echo "${{steps.previous_archive.outputs.artifacts_data}}"
+    #     echo "Artifacts found:"
+    #     echo "${{steps.previous_archive.outputs.artifacts_found}}"
+    #     echo "Artifacts length:"
+    #     echo "${{steps.previous_archive.outputs.artifacts_found_length}}"
+    #     echo "Artifacts names:"
+    #     echo "${{steps.previous_archive.outputs.artifacts_names}}"        
+    #   shell: bash
     - name: Get sha values
-      if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}
+      if: ${{steps.cached_file.outputs.get_found == 'FALSE'}}
       id: git_sha
       shell: bash
       run: |
         echo "::set-output name=current_sha_short::$(git rev-parse HEAD)"
         echo "::set-output name=previous_sha_short::$(git rev-parse HEAD~1)"
     - uses: actions/checkout@v2
-      if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}
+      if: ${{steps.cached_file.outputs.get_found == 'FALSE'}}
       with:
         fetch-depth: 0
         path: previous
         ref: ${{steps.git_sha.outputs.previous_sha_short}}
     - name: Build Storybook in previous build
-      if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}
+      if: ${{steps.cached_file.outputs.get_found == 'FALSE'}}
       run: npm run build-storybook > /dev/null 2>&1
       working-directory: previous
       shell: bash
@@ -58,11 +67,11 @@ runs:
       run: npm run build-storybook > /dev/null 2>&1
       shell: bash
     - name: Generate hash for previous commit from current storybook build
-      if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}
+      if: ${{steps.cached_file.outputs.get_found == 'FALSE'}}
       run: find ./previous/storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-previous.txt
       shell: bash
     - name: Download previous Storybook build hash
-      if: ${{steps.previous_archive.outputs.artifacts_found == 'TRUE'}}
+      if: ${{steps.cached_file.outputs.get_found == 'TRUE'}}
       uses: actions/download-artifact@v2
       with:
         name: storybook-hash-file-${{ steps.sub.outputs.result }}
@@ -74,17 +83,23 @@ runs:
          echo "::set-output name=previous_hash::$(cat storybook-hash-previous.txt)"
          echo "::set-output name=current_hash::$(cat storybook-hash-current.txt)"
       shell: bash
-    - name: Archive current Storybook build hash
-      uses: actions/upload-artifact@v2
+    - name: Put cached current storybook hash
+      id: cached_file_current
+      uses: fddayan/cache-file@main
       with:
-        name: storybook-hash-file-${{ steps.sub.outputs.result }}
-        path: storybook-hash-current.txt
+        put: storybook-hash-file-${{ steps.sub.outputs.result }}
+        file: storybook-hash-current.txt
+    # - name: Archive current Storybook build hash
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: storybook-hash-file-${{ steps.sub.outputs.result }}
+    #     path: storybook-hash-current.txt
     - name: Print info
       run: |
         echo "Previous hash: ${{ steps.storybook-hash.outputs.previous_hash}}"
         echo "Current hash: ${{steps.storybook-hash.outputs.current_hash }}"
         echo "Should deploy: ${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
-        echo "Artifact found: ${{steps.previous_archive.outputs.artifacts_found}}"
+        echo "Artifact found: ${{steps.cached_file.outputs.get_found}}"
       shell: bash
     - run: echo "::set-output name=should_deploy::${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
       id: chromatic-checker

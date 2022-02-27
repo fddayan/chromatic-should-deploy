@@ -31,6 +31,8 @@ runs:
         echo "${{steps.previous_archive.outputs.artifacts_data}}"
         echo "Artifacts found:"
         echo "${{steps.previous_archive.outputs.artifacts_found}}"
+        echo "Artifacts length:"
+        echo "${{steps.previous_archive.outputs.artifacts_found_length}}"
       shell: bash
     - name: Get sha values
       if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}

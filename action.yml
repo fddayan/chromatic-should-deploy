@@ -28,8 +28,6 @@ runs:
       uses: fddayan/archive-exists@main
       with:        
         artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
-        download: true
-        downloadTo: storybook-hash-previous.txt
     - name: Artifact download 
       run: |
         curl -L -u taskrabbit:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_artifact.outputs.artifactDownloadUrl}}

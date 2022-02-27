@@ -42,6 +42,7 @@ runs:
           echo "---------------"
           cat storybook-hash-previous.txt.zip
           unzip storybook-hash-previous.txt.zip
+          mv storybook-hash-current.txt storybook-hash-previous.txt
           echo "---------------"
           ls
           cat storybook-hash-previous.txt

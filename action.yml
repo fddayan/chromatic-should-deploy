@@ -20,11 +20,17 @@ runs:
       with:
         _input-text: '${{ github.head_ref }}'
         /: '-'
+    - name: Get sha values
+      id: git_sha
+      shell: bash
+      run: |
+        echo "::set-output name=current_sha_short::$(git rev-parse HEAD)"
+        echo "::set-output name=previous_sha_short::$(git rev-parse HEAD~1)"
     - name: Get cached previous storybook hash
       id: cached_file
       uses: fddayan/cache-file@main
       with:
-        get: storybook-hash-file-${{ steps.sub.outputs.result }}
+        get: storybook-hash-file-${{ steps.sub.outputs.result }}-${{steps.git_sha.outputs.previous_sha_short}}
         file: storybook-hash-current.txt
     - name: Rename file to previous
       if: ${{steps.cached_file.outputs.get_found == 'TRUE'}}
@@ -39,14 +45,7 @@ runs:
       run: |
         echo "Cache file get found:"
         echo "${{steps.cached_file.outputs.get_found}}"
-      shell: bash
-    - name: Get sha values
-      if: ${{steps.cached_file.outputs.get_found == 'FALSE'}}
-      id: git_sha
-      shell: bash
-      run: |
-        echo "::set-output name=current_sha_short::$(git rev-parse HEAD)"
-        echo "::set-output name=previous_sha_short::$(git rev-parse HEAD~1)"
+      shell: bash    
     - uses: actions/checkout@v2
       if: ${{steps.cached_file.outputs.get_found == 'FALSE'}}
       with:
@@ -82,7 +81,7 @@ runs:
       id: cached_file_current
       uses: fddayan/cache-file@main
       with:
-        put: storybook-hash-file-${{ steps.sub.outputs.result }}
+        put: storybook-hash-file-${{ steps.sub.outputs.result }}-${{steps.git_sha.outputs.current_sha_short}}
         file: storybook-hash-current.txt
     # - name: Archive current Storybook build hash
     #   uses: actions/upload-artifact@v2

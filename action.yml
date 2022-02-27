@@ -35,7 +35,7 @@ runs:
         downloadTo: storybook-hash-previous.txt
     - name: Archive download 
       run: |
-        curl -L -i -u taskrabbit:${{ github.token }} -o storybook-hash-previous.txt -H "Accept: application/vnd.github.v3+json" ${{steps.previous_archive.outputs.artifactDownloadUrl}}
+        curl -L -u taskrabbit:${{ github.token }} -o storybook-hash-previous.txt -H "Accept: application/vnd.github.v3+json" ${{steps.previous_archive.outputs.artifactDownloadUrl}}
       shell: bash
     - run: |
           ls

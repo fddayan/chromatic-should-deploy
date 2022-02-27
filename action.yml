@@ -33,6 +33,8 @@ runs:
         artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
         download: true
         downloadTo: storybook-hash-previous.txt
+    - run: ls
+      shell: bash
     - uses: actions/checkout@v2
       if: ${{steps.cached_file.outputs.get_found == 'FALSE'}}
       with:

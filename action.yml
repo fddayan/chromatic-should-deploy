@@ -67,12 +67,6 @@ runs:
          echo "::set-output name=previous_hash::$(cat storybook-hash-previous.txt)"
          echo "::set-output name=current_hash::$(cat storybook-hash-current.txt)"
       shell: bash
-    - name: Put cached current storybook hash
-      id: cached_file_current
-      uses: fddayan/cache-file@main
-      with:
-        put: storybook-hash-file-${{ steps.sub.outputs.result }}-${{steps.git_sha.outputs.current_sha_short}}
-        file: storybook-hash-current.txt
     - name: Archive current Storybook build hash
       uses: actions/upload-artifact@v2
       with:

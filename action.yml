@@ -41,6 +41,7 @@ runs:
           ls
           echo "---------------"
           cat storybook-hash-previous.txt.zip
+          unzip storybook-hash-previous.txt.zip
       shell: bash
     - uses: actions/checkout@v2
       if: ${{steps.previous_archive.outputs.artifacts_found == 'FALSE'}}

@@ -25,7 +25,7 @@ runs:
         echo "::set-output name=previous_sha_short::$(git rev-parse HEAD~1)"
     - name: Artifact exists
       id: 'previous_artifact'
-      uses: fddayan/archive-exists@main
+      uses: fddayan/archive-exists@v1.1.0
       with:        
         artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
     - name: Artifact download 

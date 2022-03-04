@@ -8,10 +8,14 @@ inputs:
   artifactName:
     required: true  
     description: "The artifact name to store"
+  previousSha:
+    required: false
+    description: "Previous sha commit to checkout to build storybook in case artifact is not present."
+    default: ${{github.event.before}}
 outputs:
-  should_deploy:
+  shouldDeploy:
     description: TRUE/FALSE value if it should deploy chromatic based on previous build
-    value: ${{ steps.chromatic-checker.outputs.should_deploy }}
+    value: ${{ steps.chromatic-checker.outputs.shouldDeploy }}
 
 runs:
   using: 'composite'
@@ -44,7 +48,7 @@ runs:
       with:
         fetch-depth: 0
         path: previous
-        ref: ${{ github.event.before }}
+        ref: ${{inputs.previousSha}}
     - name: Build Storybook in previous build
       if: ${{steps.previous_artifact.outputs.artifactsFound == 'FALSE'}}
       run: npm run build-storybook > /dev/null 2>&1
@@ -80,6 +84,6 @@ runs:
         echo "Should deploy: ${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
         echo "Artifact found: ${{steps.previous_artifact.outputs.artifactsFound}}"
       shell: bash
-    - run: echo "::set-output name=should_deploy::${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
+    - run: echo "::set-output name=shouldDeploy::${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
       id: chromatic-checker
       shell: bash

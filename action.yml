@@ -4,6 +4,10 @@ author: 'fddayan'
 branding:
   icon: 'alert-triangle'  
   color: 'green'
+inputs:
+  artifactName:
+    required: true  
+    description: "The artifact name to store"
 outputs:
   should_deploy:
     description: TRUE/FALSE value if it should deploy chromatic based on previous build
@@ -12,26 +16,21 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - uses: bluwy/substitute-string-action@v1
-      id: sub
-      with:
-        _input-text: '${{ github.head_ref }}'
-        /: '-'
-    - name: Get sha values
-      id: git_sha
-      shell: bash
-      run: |
-        echo "::set-output name=current_sha_short::$(git rev-parse HEAD)"
-        echo "::set-output name=previous_sha_short::$(git rev-parse HEAD~1)"
+    # - uses: bluwy/substitute-string-action@v1
+    #   id: sub
+    #   with:
+    #     _input-text: '${{ github.head_ref }}'
+    #     /: '-'
     - name: Artifact exists
       id: 'previous_artifact'
       uses: fddayan/archive-exists@v1.1.0
       with:        
-        artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
+        # artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
+        artifactName: $${{inputs.artifactName}}
     - name: Artifact download 
       if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
       run: |
-        curl -L -u taskrabbit:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_artifact.outputs.artifactDownloadUrl}}
+        curl -L -u ${{ github.actor }}:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_artifact.outputs.artifactDownloadUrl}}
       shell: bash
     - name: Unzip Artifact
       if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
@@ -71,7 +70,8 @@ runs:
     - name: Archive current Storybook build hash
       uses: actions/upload-artifact@v2
       with:
-        name: storybook-hash-file-${{ steps.sub.outputs.result }}
+        # name: storybook-hash-file-${{ steps.sub.outputs.result }}
+        name: $${{inputs.artifactName}}
         path: storybook-hash-current.txt
     - name: Print info
       run: |

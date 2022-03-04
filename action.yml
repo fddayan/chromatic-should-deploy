@@ -16,17 +16,17 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    # - uses: bluwy/substitute-string-action@v1
-    #   id: sub
-    #   with:
-    #     _input-text: '${{ github.head_ref }}'
-    #     /: '-'
+    - uses: bluwy/substitute-string-action@v1
+      id: sub
+      with:
+        _input-text: '${{inputs.artifactName}}'
+        /: '-'
     - name: Artifact exists
       id: 'previous_artifact'
       uses: fddayan/archive-exists@v1.1.0
       with:        
         # artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
-        artifactName: $${{inputs.artifactName}}
+        artifactName: ${{ steps.sub.outputs.result }}
     - name: Artifact download 
       if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
       run: |
@@ -71,7 +71,7 @@ runs:
       uses: actions/upload-artifact@v2
       with:
         # name: storybook-hash-file-${{ steps.sub.outputs.result }}
-        name: $${{inputs.artifactName}}
+        name: ${{ steps.sub.outputs.result }}
         path: storybook-hash-current.txt
     - name: Print info
       run: |

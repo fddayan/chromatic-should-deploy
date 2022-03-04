@@ -54,11 +54,11 @@ runs:
         ref: ${{inputs.previousSha}}
     - name: Build Storybook in previous build
       if: ${{steps.previous_artifact.outputs.artifactsFound == 'FALSE'}}
-      run: npm run build-storybook > /dev/null 2>&1
+      run: npm run build-storybook
       working-directory: previous
       shell: bash
     - name: Build Storybook in current build
-      run: npm run build-storybook > /dev/null 2>&1
+      run: npm run build-storybook
       shell: bash
     - name: Generate hash for previous commit from current storybook build
       if: ${{steps.previous_artifact.outputs.artifactsFound == 'FALSE'}}

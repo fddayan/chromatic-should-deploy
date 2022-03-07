@@ -22,38 +22,51 @@ outputs:
 
 runs:
   using: 'composite'
-  steps:
-    - uses: bluwy/substitute-string-action@v1
-      id: sub
+  steps:    
+    # - uses: bluwy/substitute-string-action@v1
+    #   id: sub
+    #   with:
+    #     _input-text: '${{inputs.artifactName}}'
+    #     /: '-'
+    # - name: Artifact exists
+    #   id: 'previous_artifact'
+    #   uses: fddayan/archive-exists@v1.1.0
+    #   with:        
+    #     artifactName: ${{inputs.artifactName}}
+    # - name: Artifact download 
+    #   if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
+    #   run: |
+    #     curl -L -u ${{ inputs.githubUser }}:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_artifact.outputs.artifactDownloadUrl}}
+    #   shell: bash
+    # - name: Unzip Artifact
+    #   if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
+    #   run: |
+    #       unzip storybook-hash-previous.txt.zip
+    #       mv storybook-hash-current.txt storybook-hash-previous.txt
+    #       cat storybook-hash-previous.txt
+    #   shell: bash
+    - name: Download artifact with previous storybook build hash
+      uses: dawidd6/action-download-artifact@v2
       with:
-        _input-text: '${{inputs.artifactName}}'
-        /: '-'
-    - name: Artifact exists
-      id: 'previous_artifact'
-      uses: fddayan/archive-exists@v1.1.0
-      with:        
-        # artifactName: storybook-hash-file-${{ steps.sub.outputs.result }}
-        artifactName: ${{ steps.sub.outputs.result }}
-    - name: Artifact download 
-      if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
-      run: |
-        curl -L -u ${{ inputs.githubUser }}:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_artifact.outputs.artifactDownloadUrl}}
-      shell: bash
-    - name: Unzip Artifact
-      if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
-      run: |
-          unzip storybook-hash-previous.txt.zip
-          mv storybook-hash-current.txt storybook-hash-previous.txt
-          cat storybook-hash-previous.txt
-      shell: bash
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        workflow: main.yml
+        branch: main
+        name: ${{inputs.artifactName}}
+        path: storybook-hash-previous.txt
+        check_artifacts: true
+    - name: Checks previous artifact existence
+      id: previous_artifact
+      uses: andstor/file-existence-action@v1.1.0
+      with:
+        files: "storybook-hash-previous.txt"
     - uses: actions/checkout@v2
-      if: ${{steps.previous_artifact.outputs.artifactsFound == 'FALSE'}}
+      if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       with:
         fetch-depth: 0
         path: previous
         ref: ${{inputs.previousSha}}
     - name: Build Storybook in previous build
-      if: ${{steps.previous_artifact.outputs.artifactsFound == 'FALSE'}}
+      if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       run: npm run build-storybook
       working-directory: previous
       shell: bash
@@ -61,7 +74,7 @@ runs:
       run: npm run build-storybook
       shell: bash
     - name: Generate hash for previous commit from current storybook build
-      if: ${{steps.previous_artifact.outputs.artifactsFound == 'FALSE'}}
+      if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       run: | 
         find ./previous/storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-previous.txt
         cat storybook-hash-previous.txt
@@ -77,15 +90,14 @@ runs:
     - name: Archive current Storybook build hash
       uses: actions/upload-artifact@v2
       with:
-        # name: storybook-hash-file-${{ steps.sub.outputs.result }}
-        name: ${{ steps.sub.outputs.result }}
+        name: ${{inputs.artifactName}}
         path: storybook-hash-current.txt
     - name: Print info
       run: |
         echo "Previous hash: ${{ steps.storybook-hash.outputs.previous_hash}}"
         echo "Current hash: ${{steps.storybook-hash.outputs.current_hash }}"
         echo "Should deploy: ${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
-        echo "Artifact found: ${{steps.previous_artifact.outputs.artifactsFound}}"
+        echo "Artifact found: ${{steps.previous_artifact.outputs.files_exists}}"
       shell: bash
     - run: echo "::set-output name=shouldDeploy::${{ steps.storybook-hash.outputs.previous_hash != steps.storybook-hash.outputs.current_hash }}"
       id: chromatic-checker

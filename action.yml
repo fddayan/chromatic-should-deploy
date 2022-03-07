@@ -19,6 +19,14 @@ inputs:
     description: 'The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create or update the comment. This defaults to {{ github.token }}.'
     default: '${{ github.token }}'
     required: false
+  storybookBuildCommand:
+    description: Command to run to build storybook.
+    required: false
+    default: npm run build-storybook
+  debug:
+    description: 'if set to true it will upload the output of storybook build as artifacts.'
+    default: false
+    required: false
 outputs:
   shouldDeploy:
     description: TRUE/FALSE value if it should deploy chromatic based on previous build
@@ -76,12 +84,29 @@ runs:
         ref: ${{inputs.previousSha}}
     - name: Build Storybook in previous build
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
-      run: npm run build-storybook > /dev/null 2>&1
+      run: ${{inputs.storybookBuildCommand}} > build-storybook-previous.log
       working-directory: previous
       shell: bash
     - name: Build Storybook in current build
-      run: npm run build-storybook > /dev/null 2>&1
+      run: ${{inputs.storybookBuildCommand}} > build-storybook-current.log
       shell: bash
+    - name: Checks previous artifact existence
+      id: previous_artifact
+      uses: andstor/file-existence-action@v1.1.0
+      with:
+        files: "storybook-hash-previous.txt"
+    - name: Upload previous storybook build output
+      if: ${{inputs.debug == "true" && steps.previous_artifact.outputs.files_exists == 'false'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{inputs.artifactName}}-storybook-build-previous
+        path: storybook-hash-previous.txt
+    - name: Upload current storybook build output
+      if: ${{inputs.debug == "true"}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{inputs.artifactName}}-storybook-build-current
+        path: storybook-hash-current.txt
     - name: Generate hash for previous commit from current storybook build
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       run: | 

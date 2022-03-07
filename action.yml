@@ -54,7 +54,7 @@ runs:
       with:
         github_token: ${{inputs.GITHUB_TOKEN}}
         workflow: main_pulls.yml
-        branch: main
+        branch: ${{ github.event.pull_request.head.ref }}
         name: ${{inputs.artifactName}}
         path: storybook-hash-previous.txt
         check_artifacts: true

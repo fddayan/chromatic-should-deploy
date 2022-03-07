@@ -15,6 +15,10 @@ inputs:
     required: false
     description: "Previous sha commit to checkout to build storybook in case artifact is not present."
     default: ${{github.event.before}}
+  GITHUB_TOKEN:
+    description: 'The GitHub access token (e.g. secrets.GITHUB_TOKEN) used to create or update the comment. This defaults to {{ github.token }}.'
+    default: '${{ github.token }}'
+    required: false
 outputs:
   shouldDeploy:
     description: TRUE/FALSE value if it should deploy chromatic based on previous build
@@ -48,8 +52,8 @@ runs:
     - name: Download artifact with previous storybook build hash
       uses: dawidd6/action-download-artifact@v2
       with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        workflow: main.yml
+        github_token: ${{inputs.GITHUB_TOKEN}}
+        workflow: main_pulls.yml
         branch: main
         name: ${{inputs.artifactName}}
         path: storybook-hash-previous.txt

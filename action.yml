@@ -57,7 +57,7 @@ runs:
         branch: ${{ github.event.pull_request.head.ref }}
         name: ${{inputs.artifactName}}
         path: storybook-hash-previous.txt
-        check_artifacts: true
+        check_artifacts: false
     - name: Checks previous artifact existence
       id: previous_artifact
       uses: andstor/file-existence-action@v1.1.0

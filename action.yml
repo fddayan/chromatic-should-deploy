@@ -56,8 +56,13 @@ runs:
         workflow: main_pulls.yml
         branch: ${{ github.event.pull_request.head.ref }}
         name: ${{inputs.artifactName}}
-        path: storybook-hash-previous.txt
+        path: storybook-hash
         check_artifacts: false
+    - name: Unzip Artifact
+      if: ${{steps.previous_artifact.outputs.files_exists == 'true'}}
+      run: |
+        mv storybook-hash/storybook-hash-current.txt ./storybook-hash-previous.txt
+      shell: bash
     - name: Checks previous artifact existence
       id: previous_artifact
       uses: andstor/file-existence-action@v1.1.0
@@ -71,11 +76,11 @@ runs:
         ref: ${{inputs.previousSha}}
     - name: Build Storybook in previous build
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
-      run: npm run build-storybook
+      run: npm run build-storybook > /dev/null 2>&1
       working-directory: previous
       shell: bash
     - name: Build Storybook in current build
-      run: npm run build-storybook
+      run: npm run build-storybook > /dev/null 2>&1
       shell: bash
     - name: Generate hash for previous commit from current storybook build
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}

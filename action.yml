@@ -91,13 +91,13 @@ runs:
       run: ${{inputs.storybookBuildCommand}} > build-storybook-current.log
       shell: bash
     - name: Upload previous storybook build output
-      if: ${{inputs.debug == "true" && steps.previous_artifact.outputs.files_exists == 'false'}}
+      if: ${{inputs.debug == 'true' && steps.previous_artifact.outputs.files_exists == 'false'}}
       uses: actions/upload-artifact@v2
       with:
         name: ${{inputs.artifactName}}-storybook-build-previous
         path: storybook-hash-previous.txt
     - name: Upload current storybook build output
-      if: ${{inputs.debug == "true"}}
+      if: ${{inputs.debug == 'true'}}
       uses: actions/upload-artifact@v2
       with:
         name: ${{inputs.artifactName}}-storybook-build-current

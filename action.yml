@@ -84,11 +84,11 @@ runs:
         ref: ${{inputs.previousSha}}
     - name: Build Storybook in previous build
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
-      run: ${{inputs.storybookBuildCommand}} > build-storybook-previous.log
+      run: ${{inputs.storybookBuildCommand}} > build-storybook-previous.log 2>&1
       working-directory: previous
       shell: bash
     - name: Build Storybook in current build
-      run: ${{inputs.storybookBuildCommand}} > build-storybook-current.log
+      run: ${{inputs.storybookBuildCommand}} > build-storybook-current.log 2>&1
       shell: bash
     - name: Upload previous storybook build output
       if: ${{inputs.debug == 'true' && steps.previous_artifact.outputs.files_exists == 'false'}}

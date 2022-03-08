@@ -65,17 +65,17 @@ runs:
         branch: ${{ github.event.pull_request.head.ref }}
         name: ${{inputs.artifactName}}
         path: storybook-hash
-        check_artifacts: false
+        check_artifacts: false    
+    - name: Checks previous artifact existence
+      id: previous_artifact
+      uses: andstor/file-existence-action@v1.1.0
+      with:
+        files: "storybook-hash/storybook-hash-current.txt"
     - name: Unzip Artifact
       if: ${{steps.previous_artifact.outputs.files_exists == 'true'}}
       run: |
         mv storybook-hash/storybook-hash-current.txt ./storybook-hash-previous.txt
       shell: bash
-    - name: Checks previous artifact existence
-      id: previous_artifact
-      uses: andstor/file-existence-action@v1.1.0
-      with:
-        files: "storybook-hash-previous.txt"
     - uses: actions/checkout@v2
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       with:

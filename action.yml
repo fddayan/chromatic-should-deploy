@@ -101,7 +101,7 @@ runs:
       uses: actions/upload-artifact@v2
       with:
         name: ${{inputs.artifactName}}-storybook-build-current
-        path: storybook-hash-current.log
+        path: build-storybook-current.log
     - name: Generate hash for previous commit from current storybook build
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       run: | 

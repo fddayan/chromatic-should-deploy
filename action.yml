@@ -95,13 +95,13 @@ runs:
       uses: actions/upload-artifact@v2
       with:
         name: ${{inputs.artifactName}}-storybook-build-previous
-        path: storybook-hash-previous.txt
+        path: build-storybook-previous.log
     - name: Upload current storybook build output
       if: ${{inputs.debug == 'true'}}
       uses: actions/upload-artifact@v2
       with:
         name: ${{inputs.artifactName}}-storybook-build-current
-        path: storybook-hash-current.txt
+        path: storybook-hash-current.log
     - name: Generate hash for previous commit from current storybook build
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       run: | 

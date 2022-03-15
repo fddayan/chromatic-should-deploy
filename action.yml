@@ -95,12 +95,12 @@ runs:
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       run: |
         mkdir -p ${{inputs.artifactDownloadPath}}
-        find ${{inputs.checkoutRepoFolder}}/${{inputs.storybookStaticDir}}/ -type f -exec md5sum {} \; | md5sum > ${{inputs.artifactDownloadPath}}/storybook-hash-current.txt
+        find ${{inputs.checkoutRepoFolder}}/${{inputs.storybookStaticDir}} -type f -exec md5sum {} \; | md5sum > ${{inputs.artifactDownloadPath}}/storybook-hash-current.txt
       shell: bash
     - name: Get hash values for previous and current storybook builds
       id: storybook-hash
       run: |          
-         find ${{inputs.storybookStaticDir}}/ -type f -exec md5sum {} \; | md5sum > storybook-hash-current.txt
+         find ${{inputs.storybookStaticDir}} -type f -exec md5sum {} \; | md5sum > storybook-hash-current.txt
          echo "::set-output name=previous_hash::$(cat ${{inputs.artifactDownloadPath}}/storybook-hash-current.txt)"
          echo "::set-output name=current_hash::$(cat storybook-hash-current.txt)"
       shell: bash

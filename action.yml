@@ -69,12 +69,12 @@ runs:
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       with:
         fetch-depth: 0
-        path: previous
+        path: ${{inputs.checkoutRepoFolder}}
         ref: ${{inputs.previousSha}}
     - name: Build Storybook in previous build
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       run: ${{inputs.storybookBuildCommand}} > build-storybook-previous.log 2>&1
-      working-directory: previous
+      working-directory: ${{inputs.checkoutRepoFolder}}
       shell: bash
     - name: Build Storybook in current build
       run: ${{inputs.storybookBuildCommand}} > build-storybook-current.log 2>&1
@@ -95,12 +95,12 @@ runs:
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       run: |
         mkdir -p ${{inputs.artifactDownloadPath}}
-        find ./${{inputs.checkoutRepoFolder}}/${{inputs.storybookStaticDir}}/ -type f -exec md5sum {} \; | md5sum > ${{inputs.artifactDownloadPath}}/storybook-hash-current.txt
+        find ${{inputs.checkoutRepoFolder}}/${{inputs.storybookStaticDir}}/ -type f -exec md5sum {} \; | md5sum > ${{inputs.artifactDownloadPath}}/storybook-hash-current.txt
       shell: bash
     - name: Get hash values for previous and current storybook builds
       id: storybook-hash
       run: |          
-         find ./${{inputs.storybookStaticDir}}/ -type f -exec md5sum {} \; | md5sum > storybook-hash-current.txt
+         find ${{inputs.storybookStaticDir}}/ -type f -exec md5sum {} \; | md5sum > storybook-hash-current.txt
          echo "::set-output name=previous_hash::$(cat ${{inputs.artifactDownloadPath}}/storybook-hash-current.txt)"
          echo "::set-output name=current_hash::$(cat storybook-hash-current.txt)"
       shell: bash

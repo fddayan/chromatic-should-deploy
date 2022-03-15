@@ -5,9 +5,6 @@ branding:
   icon: 'alert-triangle'  
   color: 'green'
 inputs:
-  githubUser:
-    required: true
-    description: The github user to be used to pull the artifact
   artifactName:
     required: true  
     description: "The artifact name to store"
@@ -24,9 +21,28 @@ inputs:
     required: false
     default: npm run build-storybook
   debug:
-    description: 'if set to true it will upload the output of storybook build as artifacts.'
-    default: false
+    description: 'if set to true it will upload the output of storybook build as artifacts.'    
     required: false
+    default: false
+  checkoutRepoFolder:
+    description: 'The folder to checkout the second repository with the previous commit to build Storybook' 
+    required: false
+    default: 'previous'
+  storybookStaticDir:
+    description: 'Output build directory for Storybook'
+    required: false
+    default: 'storybook-static'
+  artifactWorkflow:
+    description: 'Workflow to look for artifacts uploaded by this action'
+    required: true
+  artifactBranch:
+    description: 'The branch to look for artifacts uploaded by this action'
+    required: false
+    default: ${{ github.event.pull_request.head.ref }}
+  artifactDownloadPath:
+    description: 'The path to download the artifacts uploaded by this action'
+    required: false
+    default: 'storybook-hash'
 outputs:
   shouldDeploy:
     description: TRUE/FALSE value if it should deploy chromatic based on previous build
@@ -35,47 +51,20 @@ outputs:
 runs:
   using: 'composite'
   steps:    
-    # - uses: bluwy/substitute-string-action@v1
-    #   id: sub
-    #   with:
-    #     _input-text: '${{inputs.artifactName}}'
-    #     /: '-'
-    # - name: Artifact exists
-    #   id: 'previous_artifact'
-    #   uses: fddayan/archive-exists@v1.1.0
-    #   with:        
-    #     artifactName: ${{inputs.artifactName}}
-    # - name: Artifact download 
-    #   if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
-    #   run: |
-    #     curl -L -u ${{ inputs.githubUser }}:${{ github.token }} -o storybook-hash-previous.txt.zip -H "Accept: application/vnd.github.v3+json" ${{steps.previous_artifact.outputs.artifactDownloadUrl}}
-    #   shell: bash
-    # - name: Unzip Artifact
-    #   if: ${{steps.previous_artifact.outputs.artifactsFound == 'TRUE'}}
-    #   run: |
-    #       unzip storybook-hash-previous.txt.zip
-    #       mv storybook-hash-current.txt storybook-hash-previous.txt
-    #       cat storybook-hash-previous.txt
-    #   shell: bash
     - name: Download artifact with previous storybook build hash
       uses: dawidd6/action-download-artifact@v2
       with:
         github_token: ${{inputs.GITHUB_TOKEN}}
-        workflow: main_pulls.yml
-        branch: ${{ github.event.pull_request.head.ref }}
+        workflow: ${{inputs.artifactWorkflow}}
+        branch: ${{inputs.artifactBranch}}
         name: ${{inputs.artifactName}}
-        path: storybook-hash
+        path: ${{inputs.artifactDownloadPath}}
         check_artifacts: false    
     - name: Checks previous artifact existence
       id: previous_artifact
       uses: andstor/file-existence-action@v1.1.0
       with:
-        files: "storybook-hash/storybook-hash-current.txt"
-    - name: Unzip Artifact
-      if: ${{steps.previous_artifact.outputs.files_exists == 'true'}}
-      run: |
-        mv storybook-hash/storybook-hash-current.txt ./storybook-hash-previous.txt
-      shell: bash
+        files: "${{inputs.artifactDownloadPath}}/storybook-hash-current.txt"
     - uses: actions/checkout@v2
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       with:
@@ -104,16 +93,15 @@ runs:
         path: build-storybook-current.log
     - name: Generate hash for previous commit from current storybook build
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
-      run: | 
-        find ./previous/storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-previous.txt
-        cat storybook-hash-previous.txt
+      run: |
+        mkdir -p ${{inputs.artifactDownloadPath}}
+        find ./${{inputs.checkoutRepoFolder}}/${{inputs.storybookStaticDir}}/ -type f -exec md5sum {} \; | md5sum > ${{inputs.artifactDownloadPath}}/storybook-hash-current.txt
       shell: bash
     - name: Get hash values for previous and current storybook builds
       id: storybook-hash
       run: |          
-         find ./storybook-static/ -type f -exec md5sum {} \; | md5sum > storybook-hash-current.txt
-         cat storybook-hash-current.txt
-         echo "::set-output name=previous_hash::$(cat storybook-hash-previous.txt)"
+         find ./${{inputs.storybookStaticDir}}/ -type f -exec md5sum {} \; | md5sum > storybook-hash-current.txt
+         echo "::set-output name=previous_hash::$(cat ${{inputs.artifactDownloadPath}}/storybook-hash-current.txt)"
          echo "::set-output name=current_hash::$(cat storybook-hash-current.txt)"
       shell: bash
     - name: Archive current Storybook build hash

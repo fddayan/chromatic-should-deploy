@@ -60,7 +60,8 @@ runs:
         name: ${{inputs.artifactName}}
         path: ${{inputs.artifactDownloadPath}}
         workflow_conclusion: false
-        check_artifacts: false    
+        check_artifacts: false
+        search_artifacts: false
     - name: Checks previous artifact existence
       id: previous_artifact
       uses: andstor/file-existence-action@v1.1.0

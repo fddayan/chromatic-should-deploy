@@ -59,6 +59,7 @@ runs:
         branch: ${{inputs.artifactBranch}}
         name: ${{inputs.artifactName}}
         path: ${{inputs.artifactDownloadPath}}
+        workflow_conclusion: false
         check_artifacts: false    
     - name: Checks previous artifact existence
       id: previous_artifact

@@ -43,6 +43,10 @@ inputs:
     description: 'The path to download the artifacts uploaded by this action'
     required: false
     default: 'storybook-hash'
+  downloadArtifact:
+    description: 'Should download first artifact'
+    required: true
+    default: true
   forceDeploy:
     description: 'forces a deploy to Chromatic'
     required: false
@@ -56,6 +60,7 @@ runs:
   using: 'composite'
   steps:    
     - name: Download artifact with previous storybook build hash
+      if: ${{inputs.downloadArtifact == 'true'}}
       uses: dawidd6/action-download-artifact@v2
       with:
         github_token: ${{inputs.GITHUB_TOKEN}}

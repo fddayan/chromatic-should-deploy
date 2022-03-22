@@ -43,6 +43,10 @@ inputs:
     description: 'The path to download the artifacts uploaded by this action'
     required: false
     default: 'storybook-hash'
+  forceDeploy:
+    description: 'forces a deploy to Chromatic'
+    required: false
+    default: false
 outputs:
   shouldDeploy:
     description: TRUE/FALSE value if it should deploy chromatic based on previous build

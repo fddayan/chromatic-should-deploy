@@ -75,6 +75,7 @@ runs:
     - uses: actions/checkout@v2
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       with:
+        clean: false
         fetch-depth: 0
         path: ${{inputs.checkoutRepoFolder}}
         ref: ${{inputs.previousSha}}

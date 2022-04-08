@@ -89,13 +89,13 @@ runs:
       shell: bash
     - name: Upload previous storybook build output
       if: ${{inputs.debug == 'true' && steps.previous_artifact.outputs.files_exists == 'false'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{inputs.artifactName}}-storybook-build-previous
         path: build-storybook-previous.log
     - name: Upload current storybook build output
       if: ${{inputs.debug == 'true'}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{inputs.artifactName}}-storybook-build-current
         path: build-storybook-current.log
@@ -113,7 +113,7 @@ runs:
          echo "::set-output name=current_hash::$(cat storybook-hash-current.txt)"
       shell: bash
     - name: Archive current Storybook build hash
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{inputs.artifactName}}
         path: storybook-hash-current.txt

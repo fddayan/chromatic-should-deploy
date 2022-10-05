@@ -72,7 +72,7 @@ runs:
       uses: andstor/file-existence-action@v1.1.0
       with:
         files: "${{inputs.artifactDownloadPath}}/storybook-hash-current.txt"
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3.1.0
       if: ${{steps.previous_artifact.outputs.files_exists == 'false'}}
       with:
         clean: false

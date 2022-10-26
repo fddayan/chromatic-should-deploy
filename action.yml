@@ -69,7 +69,7 @@ runs:
         search_artifacts: true
     - name: Checks previous artifact existence
       id: previous_artifact
-      uses: andstor/file-existence-action@v1.1.0
+      uses: andstor/file-existence-action@v2.0.0
       with:
         files: "${{inputs.artifactDownloadPath}}/storybook-hash-current.txt"
     - uses: actions/checkout@v2
